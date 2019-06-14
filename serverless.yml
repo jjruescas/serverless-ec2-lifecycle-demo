@@ -1,0 +1,64 @@
+service: sls-project
+
+provider:
+  name: aws
+  runtime: python3.7
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - "ec2:CreateTags"
+        - "ec2:DescribeImages"
+        - "ec2:DescribeInstances"
+        - "ec2:RunInstances"
+        - "ec2:TerminateInstances"
+      Resource: "*"
+
+functions:
+  launch-ec2-instance:
+    handler: src/launch-ec2-instance.lambda_handler
+    timeout: 60
+    events:
+     - http:
+        path: launch-ec2-instances
+        method: get
+        integration: lambda
+  get-ec2-instances:
+    handler: src/get-ec2-instances.lambda_handler
+    events:
+     - http:
+        path: get-ec2-instances
+        method: get
+        integration: lambda
+  terminate-ec2-instances:
+    handler: src/terminate-ec2-instance.lambda_handler
+    events:
+     - http:
+        path: terminate-ec2-instances
+        method: get
+        integration: lambda
+  
+stepFunctions:
+  stateMachines:
+    EC2Lifecycle:
+      definition:
+        Comment: "This flow does three things: 1) it launches an EC2 instance with a specific Tag. 2) retrieves all the running intances. 3) Terminates the EC2 instance."
+        StartAt: LaunchEC2Instance
+        States:
+          LaunchEC2Instance:
+            Type: Task
+            Resource: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-launch-ec2-instance"
+            Next: GetRunningEC2Instances
+          GetRunningEC2Instances:
+            Type: Task
+            Resource: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-get-ec2-instances"
+            Next: TerminateEC2Instance
+          TerminateEC2Instance:
+            Type: Task
+            Resource: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-terminate-ec2-instances"
+            End: true
+
+
+plugins:
+  - serverless-step-functions
+  - serverless-pseudo-parameters
