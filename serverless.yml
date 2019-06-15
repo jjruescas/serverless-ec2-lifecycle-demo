@@ -41,6 +41,10 @@ functions:
 stepFunctions:
   stateMachines:
     EC2Lifecycle:
+      events:
+        - http:
+            path: start-state-machine
+            method: GET
       definition:
         Comment: "This flow does three things: 1) it launches an EC2 instance with a specific Tag. 2) retrieves all the running intances. 3) Terminates the EC2 instance."
         StartAt: LaunchEC2Instance
