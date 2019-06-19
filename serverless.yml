@@ -17,7 +17,7 @@ provider:
 functions:
   launch-ec2-instance:
     handler: src/launch-ec2-instance.lambda_handler
-    timeout: 60
+    timeout: 30
     events:
      - http:
         path: launch-ec2-instances

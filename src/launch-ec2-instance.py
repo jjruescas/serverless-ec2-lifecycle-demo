@@ -5,7 +5,7 @@ client = boto3.resource('ec2')
 
 instance_type = 'm4.xlarge'
 instance_tag = 'SLS-Demo'
-ami_id = "ami-015954d5e5548d13b" #Amazon Linux 2 AMI in us-west-1
+ami_id = "ami-0cc96feef8c6bbff3" #Amazon Linux 2 AMI in us-east-1
 
 def lambda_handler(event, context):
 
